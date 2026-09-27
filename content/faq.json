@@ -1,0 +1,93 @@
+{
+  "source": "https://stonefieldschool.com/faq.html",
+  "groups": [
+    {
+      "id": "admissions",
+      "title": "Admissions & eligibility",
+      "items": [
+        {
+          "question": "When will admissions open?",
+          "answer": "Admissions are planned to open in December 2026 for the academic session commencing thereafter. Parents are encouraged to register their interest early, as seat availability will be limited."
+        },
+        {
+          "question": "Why are seats limited?",
+          "answer": "At SFIS, we believe in quality over quantity. Our focus is not on filling classrooms but on creating an environment where every child receives individual attention, personalized guidance, and opportunities to excel. To maintain high standards, we will admit only a limited number of students during our initial years."
+        },
+        {
+          "question": "Will Kidsverse students get admission preference?",
+          "answer": "Yes. As a mark of gratitude to the families who have trusted us since the beginning, 50% of the available seats will be reserved for eligible Kidsverse students. The remaining seats will be available for students from other schools based on the admission process and seat availability."
+        },
+        {
+          "question": "Why do Kidsverse students receive priority?",
+          "answer": "Kidsverse and SFIS are part of a carefully designed educational journey. Early childhood education and higher-grade education require different learning environments. Kidsverse focuses on phonics, concept-based learning, confidence-building, and activity-based education. SFIS will take these foundations forward through advanced academics, technology integration, leadership development, competitive exam readiness, and future-focused learning."
+        },
+        {
+          "question": "Are admissions first-come, first-served?",
+          "answer": "Admissions are generally processed on a first-come, first-served basis. Priority will be given to eligible Kidsverse students first, then students who successfully complete the admission process, and then applicants based on seat availability."
+        }
+      ]
+    },
+    {
+      "id": "assessment",
+      "title": "Screening & readiness",
+      "items": [
+        {
+          "question": "Is there an admission test?",
+          "answer": "Yes. All new applicants, except where otherwise notified, will be required to appear for an admission screening assessment."
+        },
+        {
+          "question": "Why is an admission test necessary?",
+          "answer": "Our goal is to create high-performance learning communities. We are building carefully selected batches where students can learn at an appropriate pace and receive focused academic support. Our vision is to create “Super 30 Learning Groups” in every grade: small, focused, high-engagement classrooms where every student is encouraged to perform at their best. The assessment helps us understand each child’s current learning level and support needs."
+        },
+        {
+          "question": "What is the syllabus for the admission screening test?",
+          "answer": "The detailed assessment guidelines and curriculum will be released in December 2026 before admissions begin. Parents will receive complete information regarding subjects, format, and expectations."
+        }
+      ]
+    },
+    {
+      "id": "learning",
+      "title": "Learning & school vision",
+      "items": [
+        {
+          "question": "Will SFIS focus only on academics?",
+          "answer": "No. Academic excellence is important, but future success requires communication skills, technology awareness, critical thinking, creativity, leadership, sports, and strong character. SFIS is committed to developing the whole child, not just exam scores."
+        },
+        {
+          "question": "Why start only up to Grade 5?",
+          "answer": "Because we believe in building excellence step by step. It took nearly four years of planning, preparation, research, and infrastructure development before launching Stone Field International School. Great schools are built by creating the right culture, systems, teachers, and learning environment. Each year, we will expand thoughtfully while maintaining high standards."
+        },
+        {
+          "question": "What is your long-term vision?",
+          "answer": "Our long-term vision is to develop SFIS into a complete K-12 institution that prepares students for board examinations, future careers, and competitive opportunities. We aim to help every child discover their strengths and pursue excellence in their chosen field."
+        },
+        {
+          "question": "What makes SFIS different?",
+          "answer": "SFIS focuses on five core principles: Discover, Develop, Dream, Discipline, and Deliver. We combine strong academic foundations, technology-enabled learning, communication and leadership skills, sports and co-curricular development, future career readiness, limited class sizes, and strong parent-school partnerships."
+        }
+      ]
+    },
+    {
+      "id": "partnership",
+      "title": "Our team & parent partnership",
+      "items": [
+        {
+          "question": "Who is behind Stone Field International School?",
+          "answer": "Stone Field International School is founded and managed by the same team behind Kidsverse Playschool Rehan and the After School Activity Center Rehan. Over the past several years, we have worked closely with hundreds of students and parents, helping children build strong academic foundations, communication skills, and confidence. SFIS is the next step in our vision to provide world-class education within our own community."
+        },
+        {
+          "question": "Does SFIS have academic collaborations?",
+          "answer": "Yes. SFIS is supported by experienced educators, mentors, and advisors from India and abroad. Our leadership works closely with professionals from the United States and educational consultants from Chandigarh, Panchkula, and Zirakpur to study modern teaching methods, technology integration, and competitive exam preparation strategies."
+        },
+        {
+          "question": "How will SFIS keep parents informed?",
+          "answer": "SFIS plans to implement a fully digital communication system. Parents will receive updates through our school app, including daily learning updates, homework, attendance notifications, announcements, event information, and parent communication."
+        },
+        {
+          "question": "What is the SFIS promise to parents?",
+          "answer": "We promise to never compromise quality for growth. Every decision, from admissions and curriculum to teacher recruitment and infrastructure, is guided by one question: “Will this help our students become the best version of themselves?” If the answer is yes, we pursue it with full commitment."
+        }
+      ]
+    }
+  ]
+}

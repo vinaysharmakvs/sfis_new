@@ -64,8 +64,8 @@ if(interestForm){
  const values=Object.fromEntries(new FormData(interestForm));values.consent=interestForm.elements.consent.checked;values.requestId=requestId;
  try{const response=await fetch('/api/interest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)});const result=await response.json();
  if(!response.ok||result.saved!==true)throw new Error(result.error||'Your interest could not be saved. Please try again.');
- interestForm.hidden=true;const success=document.querySelector('#interest-success');success.hidden=false;success.focus();interestForm.reset();
+ interestForm.hidden=true;const success=document.querySelector('#interest-success');success.hidden=false;success.focus({preventScroll:true});interestForm.dispatchEvent(new CustomEvent('interest:saved',{detail:{childName:values.childName}}));interestForm.reset();
  }catch(error){status.textContent=error.message==='Failed to fetch'?'Connection interrupted. Please try again.':error.message;status.focus();}
- finally{button.disabled=false;button.textContent='Submit interest →';}
+ finally{button.disabled=false;button.textContent='Register interest →';}
  });
 }

@@ -1,4 +1,5 @@
 import {reviewBooking} from '../lib/booking-approval.js';
+import {setReservationCount} from '../lib/booking-reservations.js';
 import {ageEligibility} from '../lib/booking-rules.js';
 import {bookingsCsv} from '../lib/booking-report.js';
 import {createHash, randomBytes, timingSafeEqual} from 'node:crypto';
@@ -39,6 +40,7 @@ export default async function handler(req,res){
  if(!session.rowCount)return send(401,{error:'Your session has expired. Please sign in.'});
  if(req.method==='DELETE'){await pool.query('DELETE FROM sfis.founder_sessions WHERE token_hash=$1',[hash(token)]);cookie('',0);return send(200,{signedOut:true});}
  if(req.method==='PATCH' && body.type==='booking'){const result=await reviewBooking(pool,body);const {http,...payload}=result;return send(http,payload);}
+ if(req.method==='PATCH' && body.type==='bookingReservation'){const result=await setReservationCount(pool,body);const {http,...payload}=result;return send(http,payload);}
  if(req.method==='PATCH'){
  if(typeof body.id!=='string'||!/^[a-f0-9-]{36}$/i.test(body.id)||!statuses.includes(body.status)||typeof body.notes!=='string'||body.notes.length>2000)return send(400,{error:'Choose a valid status and keep notes under 2,000 characters.'});
  const updated=await pool.query('UPDATE sfis.parent_interests SET status=$2,founder_notes=$3,updated_at=NOW() WHERE id=$1 RETURNING id',[body.id,body.status,body.notes.trim()]);
@@ -52,7 +54,8 @@ export default async function handler(req,res){
  const bookings=result.rows.map(b=>({...b,eligibility:ageEligibility(b.child_dob,b.grade)}));
  if(bookingUrl.searchParams.get('export')==='csv'){res.statusCode=200;res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sfis-classroom-bookings.csv"');return res.end(bookingsCsv(bookings));}
  const summary=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='pending')::int AS pending,count(*) FILTER(WHERE status='approved')::int AS approved,count(*) FILTER(WHERE status='rejected')::int AS rejected FROM sfis.classroom_bookings");
- return send(200,{bookings,summary:summary.rows[0]});
+ const reservations=await pool.query('SELECT grade,section,slot,label,created_at FROM sfis.booking_reservations ORDER BY grade,section,slot');
+ return send(200,{bookings,summary:summary.rows[0],reservations:reservations.rows});
  }
  const url=new URL(req.url,'http://localhost');const q=(url.searchParams.get('q')||'').slice(0,150),status=url.searchParams.get('status')||'',grade=url.searchParams.get('grade')||'';const page=Math.max(1,Math.min(100000,parseInt(url.searchParams.get('page'))||1));
  const params=[q,status,grade];const where=`WHERE ($1='' OR concat_ws(' ',child_name,parent_name,mobile,locality) ILIKE '%'||$1||'%') AND ($2='' OR status=$2) AND ($3='' OR upcoming_grade=$3)`;

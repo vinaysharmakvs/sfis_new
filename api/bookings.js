@@ -33,7 +33,8 @@ export function createBookingHandler(poolProvider=getPool){return async(req,res)
  const grade=url.searchParams.get('grade'),section=url.searchParams.get('section');if(!grades.includes(grade)||!sections.includes(section))return send(400,{error:'Choose a grade and section.'});
  const assigned=await pool.query("SELECT assigned_slot AS slot,split_part(btrim(child_name),' ',1) AS name FROM sfis.classroom_bookings WHERE grade=$1 AND assigned_section=$2 AND status='approved'",[grade,section]);
  const waiting=await pool.query("SELECT slot,count(*)::int AS count FROM sfis.classroom_bookings WHERE grade=$1 AND section=$2 AND status='pending' GROUP BY slot",[grade,section]);
- return send(200,{approved:assigned.rows,pending:waiting.rows,capacity:slotsForGrade(grade).length});
+ const reserved=await pool.query("SELECT slot,label FROM sfis.booking_reservations WHERE grade=$1 AND section=$2",[grade,section]);
+ return send(200,{approved:assigned.rows,pending:waiting.rows,reserved:reserved.rows,capacity:slotsForGrade(grade).length});
  }
  if(!String(req.headers['content-type']||'').startsWith('application/json'))return send(415,{error:'JSON required.'});
  let body=req.body;try{if(!body){let raw='';for await(const chunk of req){raw+=chunk;if(Buffer.byteLength(raw)>8192)return send(413,{error:'Submission too large.'});}body=JSON.parse(raw);}else if(typeof body==='string')body=JSON.parse(body);if(!body||typeof body!=='object'||Array.isArray(body)||JSON.stringify(body).length>8192)throw Error();}catch{return send(400,{error:'Please check your details.'});}
@@ -60,6 +61,8 @@ export function createBookingHandler(poolProvider=getPool){return async(req,res)
  const active=await client.query("SELECT id FROM sfis.classroom_bookings WHERE mobile=$1 AND status IN ('pending','approved')",[data.mobile]);
  if(active.rowCount){await client.query('ROLLBACK');return send(409,{code:'MOBILE_ACTIVE',error:'This mobile number already has a pending or approved request. Use Track your request to check its status.'});}
  await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',['booking-grade:'+data.grade]);
+ const reservation=await client.query('SELECT 1 FROM sfis.booking_reservations WHERE grade=$1 AND section=$2 AND slot=$3',[data.grade,data.section,data.slot]);
+ if(reservation.rowCount){await client.query('ROLLBACK');return send(409,{code:'SLOT_RESERVED',error:'This number is reserved for a KVS student. Please choose another number.'});}
  const occupied=await client.query("SELECT id FROM sfis.classroom_bookings WHERE grade=$1 AND assigned_section=$2 AND assigned_slot=$3 AND status='approved'",[data.grade,data.section,data.slot]);
  if(occupied.rowCount){await client.query('ROLLBACK');return send(409,{code:'SLOT_TAKEN',error:'This number has been approved for another child. Please choose an available number.'});}
  let code='',inserted=false;

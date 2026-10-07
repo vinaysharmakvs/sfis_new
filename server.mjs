@@ -2,10 +2,14 @@ import http from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import path from 'node:path';
 import handler from './api/interest.js';
+import founders from './api/founders.js';
+import bookings from './api/bookings.js';
 const root=path.resolve('dist');
 const types={'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.mp4':'video/mp4','.ico':'image/x-icon'};
 http.createServer(async(req,res)=>{try{
  const url=new URL(req.url,'http://localhost');
+ if(url.pathname==='/api/bookings')return await bookings(req,res);
+ if(url.pathname==='/api/founders')return await founders(req,res);
  if(url.pathname==='/api/interest')return await handler(req,res);
  if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);return res.end();}
  const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));

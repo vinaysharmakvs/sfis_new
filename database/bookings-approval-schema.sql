@@ -48,5 +48,13 @@ CREATE TABLE IF NOT EXISTS sfis.booking_captchas (
  purpose TEXT NOT NULL CHECK(purpose IN ('booking','tracking')),
  expires_at TIMESTAMPTZ NOT NULL
 );
-REVOKE ALL ON sfis.booking_reviews,sfis.booking_captchas FROM PUBLIC;
+CREATE TABLE IF NOT EXISTS sfis.booking_reservations (
+ grade TEXT NOT NULL CHECK (grade IN ('Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Playway','Nursery','L.K.G','U.K.G')),
+ section TEXT NOT NULL CHECK (section IN ('Alpha','Beta','Gamma')),
+ slot TEXT NOT NULL CHECK (slot ~ '^[ABC]([1-9]|10)$'),
+ label TEXT NOT NULL DEFAULT 'KVS student' CHECK (label = 'KVS student'),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ PRIMARY KEY (grade,section,slot)
+);
+REVOKE ALL ON sfis.booking_reviews,sfis.booking_captchas,sfis.booking_reservations FROM PUBLIC;
 COMMIT;

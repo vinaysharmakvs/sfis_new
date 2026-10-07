@@ -25,7 +25,7 @@ const earlyGrades=[['Playway','Playway'],['Nursery','Nursery'],['LKG','L.K.G'],[
 const primaryGrades=Array.from({length:5},(_,i)=>[`Grade ${i+1}`,`Grade ${i+1}`]);
 const gradeOptions=items=>items.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
 vars.GRADE_OPTIONS=gradeOptions([...earlyGrades,...primaryGrades]);
-vars.UPCOMING_GRADE_OPTIONS=`<optgroup label="Kidsverse Campus">${gradeOptions(earlyGrades)}</optgroup><optgroup label="Stone Field Campus">${gradeOptions(primaryGrades)}</optgroup>`;
+vars.UPCOMING_GRADE_OPTIONS=`<optgroup label="Kidsverse Campus — early years enquiries">${gradeOptions(earlyGrades)}</optgroup><optgroup label="Stone Field — opening-grade interest (not confirmed)">${gradeOptions(primaryGrades)}</optgroup>`;
 write('register.html',page('Register your interest','Begin your child’s Stone Field journey. Register interest for the upcoming session.',render(read('src/register.html'))).replace('</head>','<link rel="stylesheet" href="journey.css"></head>').replace('</body>','<script src="journey.js" defer></script></body>'));
 write('blog.html',page('Founder insights','Ideas from Neha Sharma and Vinay Sharma on education, AI and parent-school partnership.',`<section class="article-hero"><a class="back-link" href="index.html">← Back to Stone Field</a><p class="eyebrow">FOUNDER BLOG</p><h1>Ideas for a brighter future.</h1><p class="byline">Practical perspectives on learning, parenting and the world our children will grow into.</p></section><div class="founder-cards blog-list">${vars.FOUNDER_CARDS}</div>`));
 for(const article of site.articles){write(article.file,page(article.title,`Founder insights by ${article.author}.`,`<section class="article-hero"><a class="back-link" href="blog.html">← All founder insights</a><p class="eyebrow">FOUNDER BLOG</p><h1>${escape(article.title)}</h1><p class="byline">By ${escape(article.author)}</p></section><article class="article-body">${article.body}<div class="article-end"><a href="index.html#enquire">Talk to the Stone Field team →</a></div></article>`));}
@@ -38,3 +38,10 @@ console.log(`Built SFIS homepage, Parent FAQ and ${site.articles.length+1} blog 
 for(const file of ['founders.html','founders.css','founders.js'])write(file,read('src/'+file));
 
 for(const file of ['journey.css','journey.js'])write(file,read('src/'+file));
+
+write("book-slot.html",page("Book your slot","Choose a grade, section and booking slot for your child at Stone Field.",read("src/booking.html")).replace("</head>",'<link rel="stylesheet" href="booking.css"></head>').replace("</body>",'<script src="booking.js" type="module"></script></body>'));
+for(const file of ["booking.css","booking.js"])write(file,read("src/"+file));
+
+write("booking-rules.js",read("lib/booking-rules.js"));
+for(const file of ["captcha.js","tracking.js"])write(file,read("src/"+file));
+write("track-booking.html",page("Track your booking request","Check the status of your Stone Field booking request.",read("src/tracking.html")).replace("</head>",'<meta name="robots" content="noindex"><link rel="stylesheet" href="booking.css"></head>').replace("</body>",'<script src="tracking.js" type="module"></script></body>'));

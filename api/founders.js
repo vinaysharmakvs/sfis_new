@@ -1,4 +1,8 @@
+import {reviewBooking} from '../lib/booking-approval.js';
+import {ageEligibility} from '../lib/booking-rules.js';
+import {bookingsCsv} from '../lib/booking-report.js';
 import {createHash, randomBytes, timingSafeEqual} from 'node:crypto';
+import {leadsCsv,gradeOrder,enquiryType} from '../lib/grade-report.js';
 import {getPool} from '../database/connection.mjs';
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const statuses=['new','contacted','discussion','admitted','closed'];
@@ -34,16 +38,35 @@ export default async function handler(req,res){
  const session=await pool.query('SELECT token_hash FROM sfis.founder_sessions WHERE token_hash=$1 AND passcode_hash=$2 AND expires_at>NOW()',[hash(token),hash(passcode)]);
  if(!session.rowCount)return send(401,{error:'Your session has expired. Please sign in.'});
  if(req.method==='DELETE'){await pool.query('DELETE FROM sfis.founder_sessions WHERE token_hash=$1',[hash(token)]);cookie('',0);return send(200,{signedOut:true});}
+ if(req.method==='PATCH' && body.type==='booking'){const result=await reviewBooking(pool,body);const {http,...payload}=result;return send(http,payload);}
  if(req.method==='PATCH'){
  if(typeof body.id!=='string'||!/^[a-f0-9-]{36}$/i.test(body.id)||!statuses.includes(body.status)||typeof body.notes!=='string'||body.notes.length>2000)return send(400,{error:'Choose a valid status and keep notes under 2,000 characters.'});
  const updated=await pool.query('UPDATE sfis.parent_interests SET status=$2,founder_notes=$3,updated_at=NOW() WHERE id=$1 RETURNING id',[body.id,body.status,body.notes.trim()]);
  return updated.rowCount?send(200,{saved:true}):send(404,{error:'Lead not found.'});
  }
+ const bookingUrl=new URL(req.url,'http://localhost');
+ if(bookingUrl.searchParams.get('view')==='bookings'){
+ const query=(bookingUrl.searchParams.get('q')||'').slice(0,150),bookingStatus=bookingUrl.searchParams.get('status')||'',grade=bookingUrl.searchParams.get('grade')||'',section=bookingUrl.searchParams.get('section')||'';
+ const result=await pool.query("SELECT id,booking_code,grade,section,slot,child_name,to_char(child_dob,'YYYY-MM-DD') AS child_dob,father_name,mother_name,locality,mobile,status,assigned_section,assigned_slot,rejection_reason,reviewed_at,created_at FROM sfis.classroom_bookings WHERE ($1='' OR concat_ws(' ',booking_code,id::text,child_name,father_name,mother_name,mobile,locality) ILIKE '%'||$1||'%') AND ($2='' OR status=$2) AND ($3='' OR grade=$3) AND ($4='' OR section=$4 OR assigned_section=$4) ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END,created_at DESC LIMIT 10001",[query,bookingStatus,grade,section]);
+ if(result.rows.length>10000)return send(413,{error:'Please narrow your booking filters to fewer than 10,000 requests.'});
+ const bookings=result.rows.map(b=>({...b,eligibility:ageEligibility(b.child_dob,b.grade)}));
+ if(bookingUrl.searchParams.get('export')==='csv'){res.statusCode=200;res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sfis-classroom-bookings.csv"');return res.end(bookingsCsv(bookings));}
+ const summary=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='pending')::int AS pending,count(*) FILTER(WHERE status='approved')::int AS approved,count(*) FILTER(WHERE status='rejected')::int AS rejected FROM sfis.classroom_bookings");
+ return send(200,{bookings,summary:summary.rows[0]});
+ }
  const url=new URL(req.url,'http://localhost');const q=(url.searchParams.get('q')||'').slice(0,150),status=url.searchParams.get('status')||'',grade=url.searchParams.get('grade')||'';const page=Math.max(1,Math.min(100000,parseInt(url.searchParams.get('page'))||1));
  const params=[q,status,grade];const where=`WHERE ($1='' OR concat_ws(' ',child_name,parent_name,mobile,locality) ILIKE '%'||$1||'%') AND ($2='' OR status=$2) AND ($3='' OR upcoming_grade=$3)`;
+ if(url.searchParams.get('export')==='csv'){
+ const exported=await pool.query(`SELECT id,child_name,parent_name,mobile,locality,upcoming_grade,current_grade,current_school,kidsverse_student,status,founder_notes,created_at FROM sfis.parent_interests ${where} ORDER BY upcoming_grade,created_at DESC,id LIMIT 10001`,params);
+ if(exported.rows.length>10000)return send(413,{error:'More than 10,000 matching leads. Filter by grade or status before exporting.'});
+ res.statusCode=200;res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sfis-grade-enquiries.csv"');return res.end(leadsCsv(exported.rows));
+ }
+ const grouped=await pool.query(`SELECT upcoming_grade, count(*)::int AS count FROM sfis.parent_interests ${where} GROUP BY upcoming_grade`,params);
+ const counts=new Map(grouped.rows.map(row=>[row.upcoming_grade,row.count]));
+ const gradeCounts=[...new Set([...gradeOrder,...counts.keys()])].map(grade=>({grade,count:counts.get(grade)||0,enquiryType:enquiryType(grade)}));
  const list=await pool.query(`SELECT id,child_name,parent_name,mobile,locality,upcoming_grade,current_grade,current_school,kidsverse_student,status,founder_notes,created_at,updated_at FROM sfis.parent_interests ${where} ORDER BY created_at DESC,id DESC LIMIT 30 OFFSET $4`,[...params,(page-1)*30]);
  const count=await pool.query(`SELECT count(*)::int AS total FROM sfis.parent_interests ${where}`,params);
  const summary=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='new')::int AS new,count(*) FILTER(WHERE status IN ('contacted','discussion'))::int AS following_up,count(*) FILTER(WHERE status='admitted')::int AS admitted FROM sfis.parent_interests");
- return send(200,{leads:list.rows,total:count.rows[0].total,summary:summary.rows[0],page});
+ return send(200,{leads:list.rows,total:count.rows[0].total,summary:summary.rows[0],gradeCounts,page});
  }catch{return send(503,{error:'Unable to access leads right now. Please try again.'});}
 }

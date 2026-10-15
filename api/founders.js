@@ -7,6 +7,8 @@ import {leadsCsv,gradeOrder,enquiryType} from '../lib/grade-report.js';
 import {getPool} from '../database/connection.mjs';
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const statuses=['new','contacted','discussion','admitted','closed'];
+const careerStatuses=['received','under_review','shortlisted','interview','not_selected','hired'];
+const csvCell=value=>{let text=String(value??'');if(/^[=+@\-\t\r]/.test(text))text="'"+text;return '"'+text.replaceAll('"','""')+'"';};
 export default async function handler(req,res){
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
  const send=(code,data)=>{res.statusCode=code;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(data));};
@@ -39,6 +41,35 @@ export default async function handler(req,res){
  const session=await pool.query('SELECT token_hash FROM sfis.founder_sessions WHERE token_hash=$1 AND passcode_hash=$2 AND expires_at>NOW()',[hash(token),hash(passcode)]);
  if(!session.rowCount)return send(401,{error:'Your session has expired. Please sign in.'});
  if(req.method==='DELETE'){await pool.query('DELETE FROM sfis.founder_sessions WHERE token_hash=$1',[hash(token)]);cookie('',0);return send(200,{signedOut:true});}
+ const founderUrl=new URL(req.url,'http://localhost');
+ if(req.method==='GET'&&founderUrl.searchParams.get('view')==='careerResume'){
+  const id=founderUrl.searchParams.get('id')||'';if(!/^[a-f0-9-]{36}$/i.test(id))return send(400,{error:'Choose a valid application.'});
+  const result=await pool.query('SELECT resume_name,resume_type,resume_data FROM sfis.career_applications WHERE id=$1',[id]);if(!result.rowCount)return send(404,{error:'Resume not found.'});
+  const file=result.rows[0],name=String(file.resume_name).replace(/[\r\n"\\]/g,'_');res.statusCode=200;res.setHeader('Content-Type',file.resume_type);res.setHeader('Content-Disposition',`attachment; filename="${name}"`);res.setHeader('Content-Length',file.resume_data.length);res.setHeader('Content-Security-Policy',"sandbox; default-src 'none'");return res.end(file.resume_data);
+ }
+ if(req.method==='GET'&&founderUrl.searchParams.get('view')==='careers'){
+  const q=(founderUrl.searchParams.get('q')||'').slice(0,150),status=founderUrl.searchParams.get('status')||'',role=founderUrl.searchParams.get('role')||'';
+  if(status&&!careerStatuses.includes(status))return send(400,{error:'Choose a valid application status.'});
+  const where=`WHERE ($1='' OR concat_ws(' ',application_ref,applicant_name,email,mobile,role_title) ILIKE '%'||$1||'%') AND ($2='' OR status=$2) AND ($3='' OR role_slug=$3)`,params=[q,status,role];
+  if(founderUrl.searchParams.get('export')==='csv'){
+   const exported=await pool.query(`SELECT application_ref,applicant_name,email,mobile,role_title,status,why_join,founder_notes,created_at,updated_at FROM sfis.career_applications ${where} ORDER BY created_at DESC,id LIMIT 10001`,params);
+   if(exported.rows.length>10000)return send(413,{error:'More than 10,000 applications match. Filter the list before exporting.'});
+   const columns=['application_ref','applicant_name','email','mobile','role_title','status','why_join','founder_notes','created_at','updated_at'];res.statusCode=200;res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sfis-career-applications.csv"');return res.end([columns.join(','),...exported.rows.map(row=>columns.map(key=>csvCell(row[key])).join(','))].join('\r\n'));
+  }
+  const applications=await pool.query(`SELECT id,application_ref,applicant_name,email,mobile,role_slug,role_title,why_join,resume_name,status,founder_notes,created_at,updated_at FROM sfis.career_applications ${where} ORDER BY created_at DESC,id DESC LIMIT 501`,params);
+  if(applications.rows.length>500)return send(413,{error:'More than 500 applications match. Add a filter to review a smaller set.'});
+  const counts=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='received')::int AS received,count(*) FILTER(WHERE status='under_review')::int AS under_review,count(*) FILTER(WHERE status='shortlisted')::int AS shortlisted,count(*) FILTER(WHERE status='interview')::int AS interview,count(*) FILTER(WHERE status='not_selected')::int AS not_selected,count(*) FILTER(WHERE status='hired')::int AS hired FROM sfis.career_applications");
+  return send(200,{applications:applications.rows,summary:counts.rows[0]});
+ }
+ if(req.method==='PATCH'&&body.type==='career'){
+  if(typeof body.id!=='string'||!/^[a-f0-9-]{36}$/i.test(body.id)||!careerStatuses.includes(body.status)||typeof body.notes!=='string'||body.notes.length>3000)return send(400,{error:'Choose a valid application status and keep notes under 3,000 characters.'});
+  const client=await pool.connect();try{await client.query('BEGIN');const prior=await client.query('SELECT status,founder_notes FROM sfis.career_applications WHERE id=$1 FOR UPDATE',[body.id]);if(!prior.rowCount){await client.query('ROLLBACK');return send(404,{error:'Application not found.'});}
+   const old=prior.rows[0],notes=body.notes.trim();await client.query('UPDATE sfis.career_applications SET status=$2,founder_notes=$3,updated_at=NOW() WHERE id=$1',[body.id,body.status,notes]);
+   if(old.status!==body.status)await client.query("INSERT INTO sfis.career_application_events(application_id,event_type,previous_status,new_status,note) VALUES($1,'status_changed',$2,$3,$4)",[body.id,old.status,body.status,notes]);
+   else if(old.founder_notes!==notes)await client.query("INSERT INTO sfis.career_application_events(application_id,event_type,previous_status,new_status,note) VALUES($1,'founder_note',$2,$2,$3)",[body.id,old.status,notes]);
+   await client.query('COMMIT');return send(200,{saved:true});
+  }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{client.release();}
+ }
  if(req.method==='PATCH' && body.type==='booking'){const result=await reviewBooking(pool,body);const {http,...payload}=result;return send(http,payload);}
  if(req.method==='PATCH' && body.type==='bookingReservation'){const result=await setReservationCount(pool,body);const {http,...payload}=result;return send(http,payload);}
  if(req.method==='PATCH'){

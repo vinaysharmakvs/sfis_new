@@ -1,4 +1,6 @@
-import {mountCaptcha} from './captcha.js';
+// Version the shared helper import so browsers do not reuse a cached helper
+// that still routes career challenges to the bookings API.
+import {mountCaptcha} from './captcha.js?v=2';
 
 const endpoint='/api/careers';
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));

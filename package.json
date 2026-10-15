@@ -10,7 +10,7 @@
     "db:setup": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local scripts/setup-db.mjs",
     "db:setup-careers": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local scripts/setup-careers-db.mjs",
     "test:bookings": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local tests/bookings.test.mjs",
-    "test:careers": "node --test tests/careers.test.mjs"
+    "test:careers": "node --test tests/careers.test.mjs tests/captcha-routing.test.mjs"
   },
   "dependencies": {
     "pg": "^8.13.1"

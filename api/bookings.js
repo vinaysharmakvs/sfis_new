@@ -26,7 +26,9 @@ export function createBookingHandler(poolProvider=getPool){return async(req,res)
  const pool=poolProvider(),ip=clientKey(req);
  if(req.method==='GET'){
  if(url.searchParams.get('action')==='captcha'){
- const purpose=url.searchParams.get('purpose');if(!['booking','tracking'].includes(purpose))return send(400,{error:'Choose a valid verification type.'});
+ // Keep the career purposes available here for browsers holding an older
+ // cached captcha.js that still requests challenges from /api/bookings.
+ const purpose=url.searchParams.get('purpose');if(!['booking','tracking','career-application','career-status'].includes(purpose))return send(400,{error:'Choose a valid verification type.'});
  if(!await rateLimit(pool,'captcha:'+ip,80))return send(429,{error:'Too many verification requests. Please try again later.'});
  return send(200,await issueCaptcha(pool,purpose));
  }

@@ -56,6 +56,8 @@ for(const file of ['styles.css','app.js','careers.css','careers.js'])write(file,
 console.log(`Built SFIS homepage, Parent FAQ and ${site.articles.length+1} blog pages.`);
 for(const file of ['founders.html','founders.css','founders.js'])write(file,read('src/'+file));
 
+for(const file of ['portal.html','portal.css','portal.js'])write(file,read('src/'+file));
+
 for(const file of ['journey.css','journey.js'])write(file,read('src/'+file));
 
 write("book-slot.html",page("Book your slot","Choose a grade, section and booking slot for your child at Stone Field.",read("src/booking.html")).replace("</head>",'<link rel="stylesheet" href="booking.css"></head>').replace("</body>",'<script src="booking.js" type="module"></script></body>'));
@@ -63,4 +65,6 @@ for(const file of ["booking.css","booking.js"])write(file,read("src/"+file));
 
 write("booking-rules.js",read("lib/booking-rules.js"));
 for(const file of ["captcha.js","tracking.js"])write(file,read("src/"+file));
+write("investor.html",page("Investor access","Private, passcode-protected Stone Field planning model.",read("src/investor.html")).replace("</head>",'<meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="investor.css"></head>').replace("</body>",'<script src="investor.js" defer></script></body>'));
+for(const file of ["investor.css","investor.js"])write(file,read("src/"+file));
 write("track-booking.html",page("Track your booking request","Check the status of your Stone Field booking request.",read("src/tracking.html")).replace("</head>",'<meta name="robots" content="noindex"><link rel="stylesheet" href="booking.css"></head>').replace("</body>",'<script src="tracking.js" type="module"></script></body>'));

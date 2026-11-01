@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {calculateInvestorModel,investorDefaults} from '../lib/investor-model.js';
+
+test('starting scenario uses 100 students and separates recurring from cohort collections',()=>{
+  const model=calculateInvestorModel();
+  assert.equal(model.values.students,100);
+  assert.equal(model.revenue.tuitionMonthly,300_000);
+  assert.equal(model.revenue.transportMonthly,100_000);
+  assert.equal(model.revenue.annual,7_200_000);
+  assert.equal(model.staff.teachers,4,'Staffing rounds up to a whole person');
+  assert.equal(model.costs.teachers,60_000);
+  assert.equal(model.costs.drivers,24_000);
+  assert.equal(model.costs.conductors,10_000);
+  assert.equal(model.costs.fuel,60_000);
+  assert.ok(Math.abs(model.costs.busTaxesInsurance-6_666.66)<0.01,'Bus tax and insurance is scaled from ₹20,000 per six buses to the modeled two-bus count');
+  assert.equal(model.operatingSurplus,3_712_000.08);
+  assert.equal(model.investorAnnualShare,148_480.0032,'Investor scenario is based on operating surplus, not gross collections');
+  assert.equal(model.investorOptions[0].equityPercent,4);
+  assert.equal(model.investorOptions[1].equityPercent,8.5);
+  assert.equal(model.growthPlan.length,10);
+  assert.equal(model.growthPlan[0].students,150);
+  assert.equal(model.growthPlan[0].annualRevenue,10_800_000,'Annual charges are counted once, with admission and miscellaneous fees only on new entrants');
+  assert.ok(Math.abs(model.growthPlan[0].annualExpenses-4_392_000)<0.2);
+  assert.equal(model.growthPlan[0].constructionBusReserve,0,'Year 1 has no construction and bus reserve');
+  assert.equal(model.growthPlan[1].constructionBusReserve,0,'No reserve applies through the first 300 students');
+  assert.equal(model.growthPlan[2].constructionBusReserve,3_000_000,'At 450 students, one additional 150-student block requires ₹30 lakh');
+  assert.equal(model.growthPlan[3].constructionBusReserve,6_120_000,'At 600 students, two blocks apply and the reserve increases 2% year on year');
+  assert.equal(model.growthPlan[9].students,1_500);
+  const [four,eight]=model.growthInvestorScenarios;
+  assert.equal(four.amount,5_000_000);
+  assert.equal(four.equityPercent,4);
+  assert.equal(eight.amount,10_000_000);
+  assert.equal(eight.equityPercent,8.5);
+  assert.ok(Math.abs(four.years[1].annualDistribution-519_364.81)<0.01,'With no reserve in Year 2, the investor receives 4% of surplus');
+  assert.equal(four.years[2].reserveContribution,120_000,'The 4% investor contributes only 4% of the reserve');
+  assert.equal(four.years[2].companyReserveFunding,2_880_000,'Operating earnings fund the balance of the reserve');
+  assert.equal(four.years[2].companyReserveFunding+four.years[2].reserveContribution,model.growthPlan[2].constructionBusReserve);
+  assert.ok(Math.abs(four.years[2].annualDistribution-four.years[2].earningsAvailable*.04)<0.001,'Distribution uses earnings after company-funded reserve');
+  assert.equal(four.years[2].cumulativeCapital,four.amount+four.years[2].cumulativeReserveContributions);
+  assert.equal(four.years.length,10);
+  assert.ok(four.recoveryYear===null||four.years[four.recoveryYear-1].recovered,'Recovery year identifies the first year cumulative returns cover capital');
+});
+
+test('editable assumptions are bounded and ratios must be positive whole numbers',()=>{
+  assert.throws(()=>calculateInvestorModel({teacherRatio:0}),/greater than zero/);
+  assert.throws(()=>calculateInvestorModel({equityPercent:101}),/between 0 and 100/);
+  assert.throws(()=>calculateInvestorModel({students:1.5}),/whole number/);
+  assert.equal(investorDefaults().investmentAmount,5_000_000);
+});

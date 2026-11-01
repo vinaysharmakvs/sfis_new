@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0c392f">
+  <title>School account | Stone Field</title>
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="stylesheet" href="portal.css">
+  <script src="portal.js" type="module"></script>
+</head>
+<body>
+  <header><a class="brand" href="index.html"><strong>SFIS</strong><span>STONE FIELD INTERNATIONAL SCHOOL</span></a><a href="index.html">Back to school website</a></header>
+  <main>
+    <section id="login-panel" class="panel" aria-labelledby="login-title">
+      <p class="eyebrow">SCHOOL ACCOUNT</p>
+      <h1 id="login-title">Welcome back.</h1>
+      <p>Sign in with the email address and temporary passcode shared by the school.</p>
+      <form id="login-form">
+        <label>Email address<input name="email" type="email" autocomplete="username" maxlength="254" required></label>
+        <label>Passcode<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
+        <button class="gold" type="submit">Sign in <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="hint">Your first sign-in will ask you to create a new password.</p>
+    </section>
+
+    <section id="change-panel" class="panel" hidden aria-labelledby="change-title">
+      <p class="eyebrow">ONE MORE STEP</p>
+      <h1 id="change-title">Create your password.</h1>
+      <p>Your temporary passcode has got you started. Choose a private password before continuing.</p>
+      <form id="change-form">
+        <label>Temporary passcode<input name="currentPassword" type="password" autocomplete="current-password" maxlength="256" required></label>
+        <label>New password<input name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required aria-describedby="password-help"></label>
+        <label>Confirm new password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+        <p id="password-help" class="hint">Use at least 12 characters. Don’t reuse your temporary passcode.</p>
+        <button class="gold" type="submit">Save password and continue →</button>
+      </form>
+    </section>
+
+    <section id="account-panel" class="panel" hidden aria-labelledby="account-title">
+      <div class="account-heading"><div><p class="eyebrow">YOUR SCHOOL ACCOUNT</p><h1 id="account-title">You’re signed in.</h1></div><button id="sign-out" type="button">Sign out</button></div>
+      <p id="account-name" class="account-name"></p>
+      <p id="account-email" class="hint"></p>
+      <h2>Your access</h2>
+      <div id="account-roles" class="roles"></div>
+      <div class="notice"><strong>Your account is ready.</strong><p>School services will appear here as they are introduced. Your access is limited to the roles and classes assigned by the school.</p></div>
+    </section>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </main>
+  <footer>Stone Field International School · Private account access</footer>
+</body>
+</html>

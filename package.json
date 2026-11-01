@@ -6,11 +6,16 @@
   "scripts": {
     "build": "node build.mjs",
     "start": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local server.mjs",
-    "check": "node --check src/app.js && node --check src/booking.js && node --check src/founders.js && node --check src/careers.js && node --check api/careers.js && node --check lib/booking-reservations.js && node --check api/bookings.js && node --check api/founders.js && node --check build.mjs",
+    "check": "node --check src/app.js && node --check src/booking.js && node --check src/founders.js && node --check src/portal.js && node --check src/careers.js && node --check src/investor.js && node --check api/careers.js && node --check api/platform-auth.js && node --check api/investor.js && node --check lib/investor-model.js && node --check lib/school-account-security.js && node --check lib/school-user-admin.js && node --check lib/booking-reservations.js && node --check api/bookings.js && node --check api/founders.js && node --check scripts/setup-platform-db.mjs && node --check build.mjs",
     "db:setup": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local scripts/setup-db.mjs",
+    "db:setup-platform": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local scripts/setup-platform-db.mjs",
     "db:setup-careers": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local scripts/setup-careers-db.mjs",
     "test:bookings": "node --dns-result-order=ipv4first --no-network-family-autoselection --env-file-if-exists=.env.local tests/bookings.test.mjs",
-    "test:careers": "node --test tests/careers.test.mjs tests/captcha-routing.test.mjs"
+    "test:careers": "node --test tests/careers.test.mjs tests/captcha-routing.test.mjs",
+    "test:accounts": "node --test tests/school-account.test.mjs",
+    "test:accounts:integration": "node --dns-result-order=ipv4first --env-file-if-exists=.env.local tests/platform-auth.integration.mjs",
+    "test:investor": "node --test tests/investor-model.test.mjs",
+    "test:investor:integration": "node --dns-result-order=ipv4first --env-file-if-exists=.env.local tests/investor.integration.mjs"
   },
   "dependencies": {
     "pg": "^8.13.1"

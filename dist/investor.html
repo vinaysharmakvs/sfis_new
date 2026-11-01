@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Investor access | Stone Field</title><meta name="description" content="Private, passcode-protected Stone Field planning model."><meta name="theme-color" content="#0c392f"><link rel="icon" href="assets/favicon.svg"><link rel="stylesheet" href="styles.css"><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="investor.css"></head><body><a class="skip" href="#main">Skip to content</a><header class="header"><a class="brand" href="index.html"><span class="header-logo"><img src="assets/sfis-gold-emblem-header.png" width="52" height="58" alt=""><span class="monogram">SFIS</span></span><span><strong>STONE FIELD</strong><small>INTERNATIONAL SCHOOL</small></span></a><button class="menu-toggle" type="button" aria-controls="navigation" aria-expanded="false">Menu <span aria-hidden="true">☰</span></button><nav id="navigation" aria-label="Main navigation"><a href="index.html#story">Our Story</a><a href="index.html#learning">Learning</a><a href="index.html#campus">Campus</a><a href="index.html#parents">For Parents</a><a href="careers.html">Careers</a><a href="book-slot.html">Book your slot</a><a class="button" href="register.html">Register interest <span aria-hidden="true">↗</span></a></nav></header><main id="main"><section id="investor-login" class="investor-gate" aria-labelledby="investor-title">
+  <div class="investor-gate-mark" aria-hidden="true">SF</div>
+  <p class="eyebrow">PRIVATE INVESTOR ACCESS</p>
+  <h1 id="investor-title">A considered view of what we’re building.</h1>
+  <p class="investor-lede">Enter your passcode to review the Stone Field planning model.</p>
+  <form id="investor-login-form">
+    <label for="investor-passcode">Investor passcode</label>
+    <input id="investor-passcode" name="passcode" type="password" required autocomplete="current-password" maxlength="160" placeholder="Enter your passcode">
+    <button class="investor-button" type="submit">Open private model <span aria-hidden="true">→</span></button>
+  </form>
+  <p id="investor-login-status" class="investor-status" role="status" aria-live="polite"></p>
+  <a class="investor-back-link" href="index.html">← Back to Stone Field</a>
+</section>
+
+<section id="investor-model" class="investor-model" hidden aria-labelledby="model-heading">
+  <div class="investor-topline"><a class="investor-wordmark" href="index.html"><span>SFIS</span><small>STONE FIELD INTERNATIONAL SCHOOL</small></a><button id="investor-signout" class="investor-signout" type="button">Lock model</button></div>
+  <header class="investor-hero">
+    <p class="eyebrow">PRIVATE PLANNING MODEL <span>·</span> 2027–28 SESSION</p>
+    <h1 id="model-heading">A school built on care.<br><em>A model built on clarity.</em></h1>
+    <p>Explore the working assumptions behind projected collections, operating costs and an illustrative share of earnings.</p>
+    <div class="investor-hero-note"><span>Current scenario</span><strong id="hero-students">—</strong><small>projected students</small></div>
+  </header>
+
+  <div id="investor-message" class="investor-message" role="status" aria-live="polite"></div>
+  <section class="investor-workbench" aria-labelledby="assumptions-title">
+    <div class="investor-section-heading"><div><p class="eyebrow">EDITABLE ASSUMPTIONS</p><h2 id="assumptions-title">Shape a scenario.</h2></div><p>Start with 100 students, then adjust the fees, staffing and expenses. Results update as you edit. Staffing counts round up to whole people.</p></div>
+    <form id="investor-assumptions-form" class="investor-form">
+      <div id="investor-fields"></div>
+      <div class="investor-form-actions"><button class="investor-button" type="submit">Update calculation <span aria-hidden="true">→</span></button><button id="investor-reset" class="investor-reset" type="button">Reset to starting values</button></div>
+    </form>
+  </section>
+
+  <section id="investor-results" aria-label="Calculated scenario results">
+    <section class="investor-summary" aria-label="Current projection summary">
+      <article class="investor-primary-metric"><span>Modeled annual operating surplus</span><strong data-output="operatingSurplus">—</strong><small>After listed operating costs, before finance, tax and capital items</small></article>
+      <article><span>Annual collections</span><strong data-output="revenue.annual">—</strong><small>Recurring and cohort-based charges</small></article>
+      <article><span>Annual operating costs</span><strong data-output="costs.annual">—</strong><small>Using whole-person staffing estimates</small></article>
+      <article><span>Operating margin</span><strong data-output="marginPercent">—</strong><small>Surplus divided by modeled collections</small></article>
+    </section>
+    <section class="investor-returns" aria-labelledby="returns-title">
+      <div><p class="eyebrow">ILLUSTRATIVE SCENARIO</p><h2 id="returns-title">What could a share look like?</h2><p>Scenario calculations apply the selected percentage to modeled earnings after the listed operating expenses. They are not a promise of a dividend or return.</p></div>
+      <div class="investor-return-grid"><article><span>Annual share at selected percentage</span><strong data-output="investorAnnualShare">—</strong></article><article><span>Monthly equivalent, if distributed evenly</span><strong data-output="investorMonthlyEquivalent">—</strong></article><article><span>Illustrative annual return on investment</span><strong data-output="roiPercent">—</strong></article><article><span>Simple payback at this scenario</span><strong data-output="paybackYears">—</strong></article></div>
+    </section>
+  </section>
+
+  <section class="investor-breakdown" aria-labelledby="breakdown-title">
+    <div class="investor-section-heading"><div><p class="eyebrow">THE WORKING MODEL</p><h2 id="breakdown-title">Where the numbers come from.</h2></div><p>Annual, admission and miscellaneous charges are counted once for the projected student cohort. Recurring tuition and transport are counted over 12 months.</p></div>
+    <div class="investor-breakdown-grid"><article><h3>Collection mix</h3><dl id="investor-revenue-breakdown"></dl></article><article><h3>Operating cost mix</h3><dl id="investor-cost-breakdown"></dl></article><article><h3>Staffing estimate</h3><dl id="investor-staff-breakdown"></dl></article></div>
+  </section>
+
+  <aside class="investor-caveat"><strong>Planning scenario, not an offer.</strong><p id="investor-caveat-text"></p></aside>
+  <section class="investor-growth" aria-labelledby="growth-title">
+    <div class="investor-section-heading"><div><p class="eyebrow">LONG-RANGE ILLUSTRATION</p><h2 id="growth-title">A 10-year growth plan.</h2></div><p>Starts with 150 students in Year 1, then adds 150 students each year. Per-student fees rise 5% yearly and operating costs rise 2% yearly. Bus tax and insurance scale with the modeled bus count (one bus per 50 students). There is no construction-and-bus reserve through 300 students. Above 300 students, the reserve is ₹30 lakh for every additional 150, rising 2% yearly. Each investor contributes only their 4% or 8.5% share of that reserve; school earnings cover the balance before investor distributions are calculated.</p></div>
+    <div class="investor-growth-charts" aria-label="Ten-year visual comparison">
+      <article class="investor-chart-card">
+        <div class="investor-chart-heading"><div><h3>Returns and capital recovery</h3><p>Cumulative distributions compared with invested capital, including reserve contributions</p></div><div class="investor-chart-legend"><span><i class="share-four"></i>₹50 lakh · cumulative return</span><span><i class="capital-four"></i>₹50 lakh · capital invested</span><span><i class="share-eight"></i>₹1 crore · cumulative return</span><span><i class="capital-eight"></i>₹1 crore · capital invested</span></div></div>
+        <div id="investor-share-chart" class="investor-chart" role="img" aria-label="Chart comparing cumulative investor distributions with total committed capital by year"></div>
+      </article>
+      <article class="investor-chart-card">
+        <div class="investor-chart-heading"><div><h3>Collections and total planned outflow</h3><p>Operating expenses plus construction and bus reserve</p></div><div class="investor-chart-legend"><span><i class="collections-key"></i>Collections</span><span><i class="expenses-key"></i>Planned outflow</span></div></div>
+        <div id="investor-finance-chart" class="investor-chart" role="img" aria-label="Chart comparing annual collections with operating expenses and construction and bus reinvestment over ten years"></div>
+      </article>
+    </div>
+    <div class="investor-payback-grid" aria-label="Investor capital recovery scenarios">
+      <article class="investor-payback-card" id="investor-payback-four"><p class="eyebrow">₹50 LAKH · 4%</p><h3>Illustrative capital recovery</h3><strong id="payback-year-four">—</strong><p id="payback-detail-four"></p></article>
+      <article class="investor-payback-card" id="investor-payback-eight"><p class="eyebrow">₹1 CRORE · 8.5%</p><h3>Illustrative capital recovery</h3><strong id="payback-year-eight">—</strong><p id="payback-detail-eight"></p></article>
+    </div>
+    <p class="investor-payback-note">Recovery year is the first modeled year when cumulative earnings distributions equal or exceed the initial investment plus that investor’s construction-and-bus reserve contributions. Distributions and recovery are illustrative and are not guaranteed.</p>
+    <div class="investor-growth-scroll" tabindex="0" aria-label="Scroll horizontally to review all 10-year projection columns">
+      <table class="investor-growth-table"><thead><tr><th scope="col">Year</th><th scope="col">Students</th><th scope="col">Annual collections</th><th scope="col">Operating expenses</th><th scope="col">Surplus before reserve</th><th scope="col">Total reserve</th><th scope="col">₹50L reserve contribution</th><th scope="col">₹50L annual return</th><th scope="col">₹50L net cash flow</th><th scope="col">₹50L cumulative returns</th><th scope="col">₹50L capital to recover</th><th scope="col">₹50L annual return %</th><th scope="col">₹1Cr reserve contribution</th><th scope="col">₹1Cr annual return</th><th scope="col">₹1Cr net cash flow</th><th scope="col">₹1Cr cumulative returns</th><th scope="col">₹1Cr capital to recover</th><th scope="col">₹1Cr annual return %</th></tr></thead><tbody id="investor-growth-table-body"></tbody></table>
+    </div>
+  </section>
+  <footer class="investor-footer"><span>Stone Field International School · Private planning material</span><a href="index.html">Return to the school website ↗</a></footer>
+</section>
+</main><footer class="footer"><div class="footer-main"><div><a class="brand" href="index.html"><span class="monogram">SFIS</span><span><strong>STONE FIELD</strong><small>INTERNATIONAL SCHOOL</small></span></a><p>Kukhnaira–Rehan, Himachal Pradesh<br>200 metres from Shani Dev Mandir</p></div><div><h2>Come say hello</h2><p>Enquiry office: Kidsverse School, Rehan</p><a class="footer-phone" href="tel:+918826758881">+91 88267 58881</a><a href="https://www.google.com/maps/search/?api=1&amp;query=Kidsverse%20School%20Rehan" target="_blank" rel="noopener noreferrer">Get directions <span aria-hidden="true">↗</span></a></div><nav aria-label="Footer navigation"><a href="index.html#story">Our Story</a><a href="index.html#learning">Learning</a><a href="index.html#campus">Campus</a><a href="blog.html">Founder Blog</a><a href="faq.html">Parent FAQ</a><a href="careers.html">Careers</a></nav></div><div class="footer-bottom"><span>© 2026 Stone Field International School</span><a href="https://kidsverseschool.com" target="_blank" rel="noopener noreferrer">Meet Kidsverse ↗</a><a href="https://tivoro.in" target="_blank" rel="noopener noreferrer">Powered by Tivoro</a></div></footer>
+<script src="app.js" defer></script><script src="investor.js" defer></script></body></html>

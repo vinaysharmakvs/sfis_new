@@ -1,4 +1,4 @@
-import {stoneFieldGrades,earlyGrades,sectionsForGrade,slotsForGrade,ageEligibility} from './booking-rules.js';
+import {stoneFieldGrades,earlyGrades,sections,sectionsForGrade,slotsForGrade,ageEligibility} from './booking-rules.js';
 import {mountCaptcha} from './captcha.js';
 (()=>{
  const $=id=>document.getElementById(id);let grade=stoneFieldGrades[0],section=sections[0],selected='',approved=new Map(),pending=new Map(),reserved=new Map(),capacity=30,ready=false,busy=false,generation=0,requestId='',requestPayload='',campus='stonefield';

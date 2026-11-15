@@ -1,10 +1,11 @@
 import {reviewBooking} from '../lib/booking-approval.js';
 import {setReservationCount} from '../lib/booking-reservations.js';
-import {ageEligibility} from '../lib/booking-rules.js';
+import {ageEligibility,grades as bookableGrades,sectionsForGrade} from '../lib/booking-rules.js';
 import {bookingsCsv} from '../lib/booking-report.js';
 import {createHash, randomBytes, timingSafeEqual} from 'node:crypto';
 import {leadsCsv,gradeOrder,enquiryType} from '../lib/grade-report.js';
 import {getPool} from '../database/connection.mjs';
+import {createSchoolAccount,listSchoolAccounts,resetSchoolAccountPasscode,setSchoolAccountStatus} from '../lib/school-user-admin.js';
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const statuses=['new','contacted','discussion','admitted','closed'];
 const careerStatuses=['received','under_review','shortlisted','interview','not_selected','hired'];
@@ -25,7 +26,7 @@ export default async function handler(req,res){
  }
  try{
  const pool=getPool();
- if(req.method==='POST'){
+ if(req.method==='POST'&&body.type!=='schoolUser'){
  const ip=process.env.VERCEL?String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||'unknown').split(',')[0].trim():req.socket.remoteAddress;
  const key=hash(String(ip));
  const attempt=await pool.query(`INSERT INTO sfis.founder_login_attempts (key,attempts,started_at) VALUES ($1,1,NOW()) ON CONFLICT (key) DO UPDATE SET attempts=CASE WHEN founder_login_attempts.started_at<NOW()-INTERVAL '15 minutes' THEN 1 ELSE founder_login_attempts.attempts+1 END, started_at=CASE WHEN founder_login_attempts.started_at<NOW()-INTERVAL '15 minutes' THEN NOW() ELSE founder_login_attempts.started_at END RETURNING attempts`,[key]);
@@ -42,6 +43,19 @@ export default async function handler(req,res){
  if(!session.rowCount)return send(401,{error:'Your session has expired. Please sign in.'});
  if(req.method==='DELETE'){await pool.query('DELETE FROM sfis.founder_sessions WHERE token_hash=$1',[hash(token)]);cookie('',0);return send(200,{signedOut:true});}
  const founderUrl=new URL(req.url,'http://localhost');
+ if(req.method==='GET'&&founderUrl.searchParams.get('view')==='schoolUsers')return send(200,{users:await listSchoolAccounts(pool)});
+ if(req.method==='POST'&&body.type==='schoolUser'){
+  const result=await createSchoolAccount(pool,body);if(result.error)return send(400,{error:result.error});
+  return send(201,result);
+ }
+ if(req.method==='PATCH'&&body.type==='schoolUserPasscode'){
+  const result=await resetSchoolAccountPasscode(pool,body.id);if(result.error)return send(400,{error:result.error});
+  return send(200,result);
+ }
+ if(req.method==='PATCH'&&body.type==='schoolUserStatus'){
+  const result=await setSchoolAccountStatus(pool,body.id,body.action);if(result.error)return send(400,{error:result.error});
+  return send(200,result);
+ }
  if(req.method==='GET'&&founderUrl.searchParams.get('view')==='careerResume'){
   const id=founderUrl.searchParams.get('id')||'';if(!/^[a-f0-9-]{36}$/i.test(id))return send(400,{error:'Choose a valid application.'});
   const result=await pool.query('SELECT resume_name,resume_type,resume_data FROM sfis.career_applications WHERE id=$1',[id]);if(!result.rowCount)return send(404,{error:'Resume not found.'});
@@ -82,10 +96,10 @@ export default async function handler(req,res){
  const query=(bookingUrl.searchParams.get('q')||'').slice(0,150),bookingStatus=bookingUrl.searchParams.get('status')||'',grade=bookingUrl.searchParams.get('grade')||'',section=bookingUrl.searchParams.get('section')||'';
  const result=await pool.query("SELECT id,booking_code,grade,section,slot,child_name,to_char(child_dob,'YYYY-MM-DD') AS child_dob,father_name,mother_name,locality,mobile,status,assigned_section,assigned_slot,rejection_reason,reviewed_at,created_at FROM sfis.classroom_bookings WHERE ($1='' OR concat_ws(' ',booking_code,id::text,child_name,father_name,mother_name,mobile,locality) ILIKE '%'||$1||'%') AND ($2='' OR status=$2) AND ($3='' OR grade=$3) AND ($4='' OR section=$4 OR assigned_section=$4) ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'approved' THEN 1 ELSE 2 END,created_at DESC LIMIT 10001",[query,bookingStatus,grade,section]);
  if(result.rows.length>10000)return send(413,{error:'Please narrow your booking filters to fewer than 10,000 requests.'});
- const bookings=result.rows.map(b=>({...b,eligibility:ageEligibility(b.child_dob,b.grade)}));
+ const bookings=result.rows.map(b=>({...b,eligibility:ageEligibility(b.child_dob,b.grade),bookingOpen:bookableGrades.includes(b.grade)&&sectionsForGrade(b.grade).includes(b.section)}));
  if(bookingUrl.searchParams.get('export')==='csv'){res.statusCode=200;res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sfis-classroom-bookings.csv"');return res.end(bookingsCsv(bookings));}
  const summary=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='pending')::int AS pending,count(*) FILTER(WHERE status='approved')::int AS approved,count(*) FILTER(WHERE status='rejected')::int AS rejected FROM sfis.classroom_bookings");
- const reservations=await pool.query('SELECT grade,section,slot,label,created_at FROM sfis.booking_reservations ORDER BY grade,section,slot');
+ const reservations=await pool.query("SELECT grade,section,slot,label,created_at FROM sfis.booking_reservations WHERE grade <> 'Grade 3' ORDER BY grade,section,slot");
  return send(200,{bookings,summary:summary.rows[0],reservations:reservations.rows});
  }
  const url=new URL(req.url,'http://localhost');const q=(url.searchParams.get('q')||'').slice(0,150),status=url.searchParams.get('status')||'',grade=url.searchParams.get('grade')||'';const page=Math.max(1,Math.min(100000,parseInt(url.searchParams.get('page'))||1));
@@ -102,5 +116,5 @@ export default async function handler(req,res){
  const count=await pool.query(`SELECT count(*)::int AS total FROM sfis.parent_interests ${where}`,params);
  const summary=await pool.query("SELECT count(*)::int AS total,count(*) FILTER(WHERE status='new')::int AS new,count(*) FILTER(WHERE status IN ('contacted','discussion'))::int AS following_up,count(*) FILTER(WHERE status='admitted')::int AS admitted FROM sfis.parent_interests");
  return send(200,{leads:list.rows,total:count.rows[0].total,summary:summary.rows[0],gradeCounts,page});
- }catch{return send(503,{error:'Unable to access leads right now. Please try again.'});}
+ }catch(error){if(error?.code==='23505')return send(409,{error:'An account with this email address already exists.'});return send(503,{error:'Unable to access the dashboard right now. Please try again.'});}
 }
